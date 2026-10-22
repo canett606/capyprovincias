@@ -21,7 +21,7 @@ button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
 
 .app {
-  width: min(480px, 100%);
+  width: min(920px, 100%);
   margin: 0 auto;
   min-height: 100dvh;
   padding: calc(12px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));
@@ -106,7 +106,12 @@ input, select {
 
 .card .play-top .ghost { width: auto; min-height: 44px; }
 
-.spain { width: 100%; height: auto; display: block; margin: 8px 0 4px; }
+.spain-frame {
+  width: min(100vw, 920px);
+  margin-left: calc(50% - min(50vw, 460px));
+}
+
+.spain { width: 100%; height: auto; display: block; margin: 4px 0; }
 
 .hangman h2 { margin: 0.2rem 0 0.4rem; font-size: 1.05rem; }
 
