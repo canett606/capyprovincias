@@ -20,7 +20,7 @@ Da igual escribir Málaga o Malaga. También vale el otro nombre oficial: Bizkai
 2. Pulsa Compartir y luego **Añadir a pantalla de inicio**.
 3. Ábrela desde el icono. La primera visita descarga la app. Después las partidas siguen sin cobertura.
 
-En GitHub Pages la dirección es `https://USUARIO.github.io/capyprovincias/`.
+En GitHub Pages la dirección es `https://canett606.github.io/capyprovincias/`.
 
 ## Publicar
 
