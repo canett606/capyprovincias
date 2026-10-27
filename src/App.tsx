@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { playCue } from "./audio";
 import { Capybara } from "./components/Capybara";
-import { loadSave, writeSave } from "./progress";
+import { activePerson, choosePerson, clearActive, listPeople, loadSave, personBlurb, personKey, writeSave } from "./progress";
 import { AtlasScreen } from "./screens/AtlasScreen";
 import { HangmanScreen } from "./screens/HangmanScreen";
 import { QuizScreen } from "./screens/QuizScreen";
@@ -24,6 +24,7 @@ export function App() {
     };
     window.addEventListener("hashchange", onHash);
     if (!window.location.hash) window.location.hash = "#/";
+    if (!activePerson() && routeOf() !== "/") window.location.hash = "#/";
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
 
@@ -33,7 +34,8 @@ export function App() {
   };
 
   let screen = <Gate onGo={go} />;
-  if (route === "/provincias-inicio") screen = <Home save={save} onSave={setSave} onGo={go} />;
+  if (!activePerson()) screen = <Gate onGo={go} />;
+  else if (route === "/provincias-inicio") screen = <Home save={save} onSave={setSave} onGo={go} />;
   else if (route === "/rios-inicio") screen = <RiverHome save={save} onSave={setSave} onGo={go} />;
   else if (route === "/preguntas") screen = <QuizScreen mode="text" onExit={() => go("/provincias-inicio")} />;
   else if (route === "/mapa") screen = <QuizScreen mode="map" onExit={() => go("/provincias-inicio")} />;
@@ -57,16 +59,74 @@ export function App() {
 }
 
 function Gate({ onGo }: { onGo: (path: string) => void }) {
+  const [people, setPeople] = useState(listPeople);
+  const [draft, setDraft] = useState("");
+  const person = activePerson();
+  const known = personKey(draft);
+
+  function refresh() {
+    setPeople(listPeople());
+  }
+
+  function enter(name: string) {
+    if (!choosePerson(name)) return;
+    setDraft("");
+    refresh();
+  }
+
+  if (!person) {
+    return (
+      <section>
+        <header className="hero">
+          <Capybara mood="happy" label="¿Quién practica?" />
+          <p className="eyebrow">Un enlace, cada persona</p>
+          <h1>¿Quién practica?</h1>
+          <p>Escribe tu nombre. Los fallos y el repaso se guardan aparte para cada persona, en este aparato.</p>
+          {people.length > 0 ? (
+            <nav className="menu" aria-label="Personas">
+              {people.map((item) => (
+                <button className="primary" type="button" key={item.key} onClick={() => enter(item.name)}>
+                  {item.name}
+                  <small>{personBlurb(item)}</small>
+                </button>
+              ))}
+            </nav>
+          ) : null}
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              enter(draft);
+            }}
+          >
+            <label>
+              {people.length > 0 ? "Otra persona" : "Tu nombre"}
+              <input
+                value={draft}
+                maxLength={16}
+                autoComplete="nickname"
+                onChange={(event) => setDraft(event.target.value)}
+              />
+            </label>
+            <button className="primary" type="submit" disabled={!known}>
+              Empezar
+            </button>
+          </form>
+        </header>
+      </section>
+    );
+  }
+
+  const verbs = `https://canett606.github.io/capyverbs/?usuario=${encodeURIComponent(person.name)}`;
   return (
     <section>
       <header className="hero">
         <Capybara mood="happy" label="Elige un juego" />
-        <p className="eyebrow">Un enlace, tres juegos</p>
+        <p className="eyebrow">Hola, {person.name}</p>
         <h1>Elige</h1>
-        <p>Entra en el que quieras. Los tres se usan en el móvil, sin cuenta.</p>
+        <p>Entra en el que quieras. Tu repaso no se mezcla con el de otra persona.</p>
       </header>
       <nav className="menu" aria-label="Juegos">
-        <a className="primary" href="https://canett606.github.io/capyverbs/">
+        <a className="primary" href={verbs}>
           CapyVerbs
           <small>Los verbos irregulares</small>
         </a>
@@ -79,6 +139,18 @@ function Gate({ onGo }: { onGo: (path: string) => void }) {
           <small>Los 22 ríos del examen</small>
         </button>
       </nav>
+      <div className="menu">
+        <button
+          className="ghost"
+          type="button"
+          onClick={() => {
+            clearActive();
+            refresh();
+          }}
+        >
+          Cambiar de persona
+        </button>
+      </div>
     </section>
   );
 }
@@ -93,6 +165,7 @@ function Home({
   onGo: (path: string) => void;
 }) {
   const misses = Object.keys(save.wrong).length;
+  const who = activePerson();
   return (
     <section>
       <button className="ghost back" type="button" onClick={() => onGo("/")}>
@@ -100,7 +173,7 @@ function Home({
       </button>
       <header className="hero">
         <Capybara mood="happy" label="CapyProvincias" />
-        <p className="eyebrow">Mapa de provincias</p>
+        <p className="eyebrow">{who ? who.name : "Mapa de provincias"}</p>
         <h1>CapyProvincias</h1>
         <p>Las 50 provincias de España. Escribes el nombre en este móvil, sin cuenta.</p>
       </header>
@@ -148,6 +221,7 @@ function RiverHome({
   onGo: (path: string) => void;
 }) {
   const riverMisses = Object.keys(save.rivers).length;
+  const who = activePerson();
   return (
     <section>
       <button className="ghost back" type="button" onClick={() => onGo("/")}>
@@ -155,7 +229,7 @@ function RiverHome({
       </button>
       <header className="hero">
         <Capybara mood="happy" label="CapyRíos" />
-        <p className="eyebrow">Hidrografía</p>
+        <p className="eyebrow">{who ? who.name : "Hidrografía"}</p>
         <h1>CapyRíos</h1>
         <p>Los 22 ríos de la ficha. Escribe el nombre con el teclado, también en el móvil.</p>
       </header>
