@@ -5,6 +5,7 @@ export type Save = {
   sound: boolean;
   wrong: Record<string, number>;
   rivers: Record<string, number>;
+  ranges: Record<string, number>;
 };
 
 export type Person = {
@@ -13,6 +14,7 @@ export type Person = {
   sound: boolean;
   wrong: Record<string, number>;
   rivers: Record<string, number>;
+  ranges: Record<string, number>;
   sessions: number;
   last: string;
 };
@@ -22,7 +24,7 @@ type Bank = {
   users: Record<string, Person>;
 };
 
-const EMPTY_SAVE: Save = { sound: true, wrong: {}, rivers: {} };
+const EMPTY_SAVE: Save = { sound: true, wrong: {}, rivers: {}, ranges: {} };
 
 export function cleanName(raw: string): string {
   return raw.replace(/\s+/g, " ").trim().slice(0, 16);
@@ -60,6 +62,7 @@ export function choosePerson(rawName: string): Person | null {
       sound: true,
       wrong: {},
       rivers: {},
+      ranges: {},
       sessions: 0,
       last: "",
     };
@@ -96,9 +99,11 @@ export function clearActive(): void {
 export function personBlurb(person: Person): string {
   const provinces = Object.keys(person.wrong).length;
   const rivers = Object.keys(person.rivers).length;
+  const ranges = Object.keys(person.ranges).length;
   const faults = [
     provinces ? `${provinces} ${provinces === 1 ? "provincia" : "provincias"}` : "",
     rivers ? `${rivers} ${rivers === 1 ? "río" : "ríos"}` : "",
+    ranges ? `${ranges} ${ranges === 1 ? "relieve" : "relieves"}` : "",
   ].filter(Boolean);
   const days = `${person.sessions} ${person.sessions === 1 ? "día" : "días"}`;
   const pending = faults.length ? faults.join(" · ") : "sin fallos guardados";
@@ -107,8 +112,13 @@ export function personBlurb(person: Person): string {
 
 export function loadSave(): Save {
   const person = activePerson();
-  if (!person) return { sound: EMPTY_SAVE.sound, wrong: {}, rivers: {} };
-  return { sound: person.sound, wrong: { ...person.wrong }, rivers: { ...person.rivers } };
+  if (!person) return { sound: EMPTY_SAVE.sound, wrong: {}, rivers: {}, ranges: {} };
+  return {
+    sound: person.sound,
+    wrong: { ...person.wrong },
+    rivers: { ...person.rivers },
+    ranges: { ...person.ranges },
+  };
 }
 
 export function writeSave(save: Save): void {
@@ -121,6 +131,7 @@ export function writeSave(save: Save): void {
     sound: save.sound,
     wrong: counts(save.wrong),
     rivers: counts(save.rivers),
+    ranges: counts(save.ranges),
   };
   writeBank(bank);
 }
@@ -138,6 +149,14 @@ export function rememberRiver(id: string, ok: boolean): void {
   if (!activePerson()) return;
   if (ok) delete save.rivers[id];
   else save.rivers[id] = (save.rivers[id] ?? 0) + 1;
+  writeSave(save);
+}
+
+export function rememberRange(id: string, ok: boolean): void {
+  const save = loadSave();
+  if (!activePerson()) return;
+  if (ok) delete save.ranges[id];
+  else save.ranges[id] = (save.ranges[id] ?? 0) + 1;
   writeSave(save);
 }
 
@@ -180,6 +199,7 @@ function sanitizePerson(key: string, value: unknown): Person | null {
     sound: row.sound !== false,
     wrong: counts(row.wrong),
     rivers: counts(row.rivers),
+    ranges: counts(row.ranges),
     sessions: Math.max(0, Math.floor(Number(row.sessions) || 0)),
     last: typeof row.last === "string" && /^\d{4}-\d{2}-\d{2}$/.test(row.last) ? row.last : "",
   };
@@ -190,7 +210,12 @@ function readLegacy(): Save | null {
     const raw = localStorage.getItem(LEGACY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<Save>;
-    return { sound: parsed.sound !== false, wrong: counts(parsed.wrong), rivers: counts(parsed.rivers) };
+    return {
+      sound: parsed.sound !== false,
+      wrong: counts(parsed.wrong),
+      rivers: counts(parsed.rivers),
+      ranges: counts(parsed.ranges),
+    };
   } catch {
     return null;
   }

@@ -3,6 +3,7 @@ import { applyGuess, emptyBoard, solutionKeys } from "../shared/hangman";
 import { PATHS } from "../shared/mapPaths";
 import { PROVINCES } from "../shared/provinces";
 import { clueSpoils, gradeAnswer, hangmanClue, textQuestions } from "../shared/questions";
+import { RANGES, gradeRange, rangeClueSpoils } from "../shared/ranges";
 import { RIVERS, gradeRiver, riverClueSpoils } from "../shared/rivers";
 
 describe("provincias", () => {
@@ -88,6 +89,40 @@ describe("ríos", () => {
     expect(ebro && gradeRiver("Ebro", ebro)).toEqual({ kind: "ok", alias: null });
     expect(tajo && gradeRiver("Tajo", tajo)).toEqual({ kind: "ok", alias: null });
     expect(ebro && gradeRiver("Ebr", ebro)).toEqual({ kind: "close" });
+  });
+});
+
+describe("cordilleras", () => {
+  it("son las 12 de la ficha, numeradas del 1 al 12", () => {
+    expect(RANGES).toHaveLength(12);
+    expect(new Set(RANGES.map((unit) => unit.id)).size).toBe(12);
+    expect(RANGES.map((unit) => unit.number).sort((a, b) => a - b)).toEqual(
+      Array.from({ length: 12 }, (_, index) => index + 1),
+    );
+    expect(RANGES.filter((unit) => unit.kind === "valle").map((unit) => unit.id).sort()).toEqual([
+      "depresion-ebro",
+      "depresion-guadalquivir",
+    ]);
+  });
+
+  it("la pista no contiene el nombre", () => {
+    for (const unit of RANGES) {
+      expect(rangeClueSpoils(unit.clue, unit), unit.name).toBe(false);
+      expect(unit.rx, unit.id).toBeGreaterThan(8);
+      expect(unit.ry, unit.id).toBeGreaterThan(6);
+    }
+  });
+
+  it("acepta el nombre sin tilde y no confunde otra unidad", () => {
+    const pirineos = RANGES.find((unit) => unit.id === "pirineos");
+    const ebro = RANGES.find((unit) => unit.id === "depresion-ebro");
+    const betico = RANGES.find((unit) => unit.id === "sistema-betico");
+    const central = RANGES.find((unit) => unit.id === "sistema-central");
+    expect(pirineos && gradeRange("los pirineos", pirineos)).toEqual({ kind: "ok", alias: null });
+    expect(ebro && gradeRange("depresion del ebro", ebro)).toMatchObject({ kind: "ok" });
+    expect(betico && gradeRange("Sistemas Béticos", betico)).toMatchObject({ kind: "ok", alias: "Sistemas Béticos" });
+    expect(central && gradeRange("Sistema Ibérico", central)).toEqual({ kind: "other", otherId: "sistema-iberico" });
+    expect(central && gradeRange("Sistema Centra", central)).toEqual({ kind: "close" });
   });
 });
 

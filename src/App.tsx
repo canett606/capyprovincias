@@ -5,6 +5,9 @@ import { activePerson, choosePerson, clearActive, listPeople, loadSave, personBl
 import { AtlasScreen } from "./screens/AtlasScreen";
 import { HangmanScreen } from "./screens/HangmanScreen";
 import { QuizScreen } from "./screens/QuizScreen";
+import { RangeAtlasScreen } from "./screens/RangeAtlasScreen";
+import { RangeHangmanScreen } from "./screens/RangeHangmanScreen";
+import { RangeQuizScreen } from "./screens/RangeQuizScreen";
 import { RiverAtlasScreen } from "./screens/RiverAtlasScreen";
 import { RiverHangmanScreen } from "./screens/RiverHangmanScreen";
 import { RiverQuizScreen } from "./screens/RiverQuizScreen";
@@ -37,6 +40,7 @@ export function App() {
   if (!activePerson()) screen = <Gate onGo={go} />;
   else if (route === "/provincias-inicio") screen = <Home save={save} onSave={setSave} onGo={go} />;
   else if (route === "/rios-inicio") screen = <RiverHome save={save} onSave={setSave} onGo={go} />;
+  else if (route === "/cordilleras-inicio") screen = <RangeHome save={save} onSave={setSave} onGo={go} />;
   else if (route === "/preguntas") screen = <QuizScreen mode="text" onExit={() => go("/provincias-inicio")} />;
   else if (route === "/mapa") screen = <QuizScreen mode="map" onExit={() => go("/provincias-inicio")} />;
   else if (route === "/repaso") screen = <QuizScreen mode="review" onExit={() => go("/provincias-inicio")} />;
@@ -47,6 +51,11 @@ export function App() {
   else if (route === "/rios-repaso") screen = <RiverQuizScreen mode="repaso" onExit={() => go("/rios-inicio")} />;
   else if (route === "/rios-ahorcado") screen = <RiverHangmanScreen onExit={() => go("/rios-inicio")} />;
   else if (route === "/rios-mapa") screen = <RiverAtlasScreen onExit={() => go("/rios-inicio")} />;
+  else if (route === "/cordilleras") screen = <RangeQuizScreen mode="practica" onExit={() => go("/cordilleras-inicio")} />;
+  else if (route === "/cordilleras-examen") screen = <RangeQuizScreen mode="examen" onExit={() => go("/cordilleras-inicio")} />;
+  else if (route === "/cordilleras-repaso") screen = <RangeQuizScreen mode="repaso" onExit={() => go("/cordilleras-inicio")} />;
+  else if (route === "/cordilleras-ahorcado") screen = <RangeHangmanScreen onExit={() => go("/cordilleras-inicio")} />;
+  else if (route === "/cordilleras-mapa") screen = <RangeAtlasScreen onExit={() => go("/cordilleras-inicio")} />;
 
   return (
     <main className="app">
@@ -137,6 +146,10 @@ function Gate({ onGo }: { onGo: (path: string) => void }) {
         <button className="primary" type="button" onClick={() => onGo("/rios-inicio")}>
           CapyRíos
           <small>Los 22 ríos del examen</small>
+        </button>
+        <button className="primary" type="button" onClick={() => onGo("/cordilleras-inicio")}>
+          CapyCordilleras
+          <small>Cordilleras, montes y depresiones</small>
         </button>
       </nav>
       <div className="menu">
@@ -248,6 +261,62 @@ function RiverHome({
         </button>
         <button className="primary" type="button" onClick={() => onGo("/rios-mapa")}>
           Mapa de ríos
+        </button>
+      </nav>
+      <div className="subnav">
+        <button
+          className="ghost"
+          type="button"
+          onClick={() => {
+            const next = { ...save, sound: !save.sound };
+            writeSave(next);
+            onSave(next);
+          }}
+        >
+          Sonido: {save.sound ? "sí" : "no"}
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function RangeHome({
+  save,
+  onSave,
+  onGo,
+}: {
+  save: ReturnType<typeof loadSave>;
+  onSave: (save: ReturnType<typeof loadSave>) => void;
+  onGo: (path: string) => void;
+}) {
+  const misses = Object.keys(save.ranges).length;
+  const who = activePerson();
+  return (
+    <section>
+      <button className="ghost back" type="button" onClick={() => onGo("/")}>
+        Elegir otro juego
+      </button>
+      <header className="hero">
+        <Capybara mood="happy" label="CapyCordilleras" />
+        <p className="eyebrow">{who ? who.name : "Relieve"}</p>
+        <h1>CapyCordilleras</h1>
+        <p>Las 12 de la ficha: cordilleras, montes y depresiones. Escribe el nombre con el teclado, también en el móvil.</p>
+      </header>
+      <nav className="menu" aria-label="Cordilleras">
+        <button className="primary" type="button" onClick={() => onGo("/cordilleras")}>
+          Escribir el nombre
+        </button>
+        <button className="primary" type="button" onClick={() => onGo("/cordilleras-ahorcado")}>
+          Ahorcado
+        </button>
+        <button className="primary" type="button" onClick={() => onGo("/cordilleras-examen")}>
+          Repaso para examen
+        </button>
+        <button className="primary" type="button" onClick={() => onGo("/cordilleras-repaso")}>
+          Cordilleras falladas{misses ? ` (${misses})` : ""}
+        </button>
+        <button className="primary" type="button" onClick={() => onGo("/cordilleras-mapa")}>
+          Mapa del relieve
         </button>
       </nav>
       <div className="subnav">

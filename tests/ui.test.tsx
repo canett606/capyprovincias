@@ -3,7 +3,9 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AnswerForm } from "../src/components/AnswerForm";
 import { Gallows } from "../src/components/Gallows";
+import { RangeQuizScreen } from "../src/screens/RangeQuizScreen";
 import { RiverQuizScreen } from "../src/screens/RiverQuizScreen";
+import { planRanges } from "../shared/ranges";
 import { planRivers } from "../shared/rivers";
 
 afterEach(() => cleanup());
@@ -27,6 +29,19 @@ describe("escribir el río", () => {
     fireEvent.change(screen.getByLabelText("Río"), { target: { value: river.name } });
     fireEvent.click(screen.getByRole("button", { name: "Comprobar" }));
     expect(screen.getByText(`Sí. ${river.name}.`)).toBeTruthy();
+    vi.restoreAllMocks();
+  });
+});
+
+describe("escribir la cordillera", () => {
+  it("corrige el nombre escrito con el teclado", () => {
+    vi.spyOn(Date, "now").mockReturnValue(42);
+    const [unit] = planRanges({ seed: 42, count: 8 });
+    render(<RangeQuizScreen mode="practica" onExit={() => undefined} />);
+    fireEvent.click(screen.getByRole("button", { name: "Empezar" }));
+    fireEvent.change(screen.getByLabelText("Cordillera"), { target: { value: unit.name } });
+    fireEvent.click(screen.getByRole("button", { name: "Comprobar" }));
+    expect(screen.getByText(`Sí. ${unit.name}.`)).toBeTruthy();
     vi.restoreAllMocks();
   });
 });
