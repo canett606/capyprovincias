@@ -67,6 +67,21 @@ h2 { font-size: 1.2rem; margin: 0.2rem 0 0.6rem; }
 
 .primary { background: #ef7d1a; color: #1b2a28; width: 100%; margin-top: 8px; }
 
+a.primary {
+  display: grid;
+  place-items: center;
+  text-decoration: none;
+  text-align: center;
+}
+
+.primary small {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.back { margin-bottom: 12px; }
+
 .primary:disabled { opacity: 0.55; }
 
 .ghost { background: transparent; color: #fffaf3; border-color: #fffaf3; }

@@ -32,17 +32,19 @@ export function App() {
     window.location.hash = path;
   };
 
-  let screen = <Home save={save} onSave={setSave} onGo={go} />;
-  if (route === "/preguntas") screen = <QuizScreen mode="text" onExit={() => go("/")} />;
-  else if (route === "/mapa") screen = <QuizScreen mode="map" onExit={() => go("/")} />;
-  else if (route === "/repaso") screen = <QuizScreen mode="review" onExit={() => go("/")} />;
-  else if (route === "/ahorcado") screen = <HangmanScreen onExit={() => go("/")} />;
-  else if (route === "/provincias") screen = <AtlasScreen onExit={() => go("/")} />;
-  else if (route === "/rios") screen = <RiverQuizScreen mode="practica" onExit={() => go("/")} />;
-  else if (route === "/rios-examen") screen = <RiverQuizScreen mode="examen" onExit={() => go("/")} />;
-  else if (route === "/rios-repaso") screen = <RiverQuizScreen mode="repaso" onExit={() => go("/")} />;
-  else if (route === "/rios-ahorcado") screen = <RiverHangmanScreen onExit={() => go("/")} />;
-  else if (route === "/rios-mapa") screen = <RiverAtlasScreen onExit={() => go("/")} />;
+  let screen = <Gate onGo={go} />;
+  if (route === "/provincias-inicio") screen = <Home save={save} onSave={setSave} onGo={go} />;
+  else if (route === "/rios-inicio") screen = <RiverHome save={save} onSave={setSave} onGo={go} />;
+  else if (route === "/preguntas") screen = <QuizScreen mode="text" onExit={() => go("/provincias-inicio")} />;
+  else if (route === "/mapa") screen = <QuizScreen mode="map" onExit={() => go("/provincias-inicio")} />;
+  else if (route === "/repaso") screen = <QuizScreen mode="review" onExit={() => go("/provincias-inicio")} />;
+  else if (route === "/ahorcado") screen = <HangmanScreen onExit={() => go("/provincias-inicio")} />;
+  else if (route === "/provincias") screen = <AtlasScreen onExit={() => go("/provincias-inicio")} />;
+  else if (route === "/rios") screen = <RiverQuizScreen mode="practica" onExit={() => go("/rios-inicio")} />;
+  else if (route === "/rios-examen") screen = <RiverQuizScreen mode="examen" onExit={() => go("/rios-inicio")} />;
+  else if (route === "/rios-repaso") screen = <RiverQuizScreen mode="repaso" onExit={() => go("/rios-inicio")} />;
+  else if (route === "/rios-ahorcado") screen = <RiverHangmanScreen onExit={() => go("/rios-inicio")} />;
+  else if (route === "/rios-mapa") screen = <RiverAtlasScreen onExit={() => go("/rios-inicio")} />;
 
   return (
     <main className="app">
@@ -51,6 +53,33 @@ export function App() {
       </a>
       <div id="contenido">{screen}</div>
     </main>
+  );
+}
+
+function Gate({ onGo }: { onGo: (path: string) => void }) {
+  return (
+    <section>
+      <header className="hero">
+        <Capybara mood="happy" label="Elige un juego" />
+        <p className="eyebrow">Un enlace, tres juegos</p>
+        <h1>Elige</h1>
+        <p>Entra en el que quieras. Los tres se usan en el móvil, sin cuenta.</p>
+      </header>
+      <nav className="menu" aria-label="Juegos">
+        <a className="primary" href="https://canett606.github.io/capyverbs/">
+          CapyVerbs
+          <small>Los verbos irregulares</small>
+        </a>
+        <button className="primary" type="button" onClick={() => onGo("/provincias-inicio")}>
+          CapyProvincias
+          <small>Las 50 provincias</small>
+        </button>
+        <button className="primary" type="button" onClick={() => onGo("/rios-inicio")}>
+          CapyRíos
+          <small>Los 22 ríos del examen</small>
+        </button>
+      </nav>
+    </section>
   );
 }
 
@@ -64,9 +93,11 @@ function Home({
   onGo: (path: string) => void;
 }) {
   const misses = Object.keys(save.wrong).length;
-  const riverMisses = Object.keys(save.rivers).length;
   return (
     <section>
+      <button className="ghost back" type="button" onClick={() => onGo("/")}>
+        Elegir otro juego
+      </button>
       <header className="hero">
         <Capybara mood="happy" label="CapyProvincias" />
         <p className="eyebrow">Mapa de provincias</p>
@@ -103,8 +134,31 @@ function Home({
           Sonido: {save.sound ? "sí" : "no"}
         </button>
       </div>
-      <h2 className="block-title">Ríos del examen</h2>
-      <p className="help">Los 22 de la ficha. Escribe el nombre con el teclado, también en el móvil.</p>
+    </section>
+  );
+}
+
+function RiverHome({
+  save,
+  onSave,
+  onGo,
+}: {
+  save: ReturnType<typeof loadSave>;
+  onSave: (save: ReturnType<typeof loadSave>) => void;
+  onGo: (path: string) => void;
+}) {
+  const riverMisses = Object.keys(save.rivers).length;
+  return (
+    <section>
+      <button className="ghost back" type="button" onClick={() => onGo("/")}>
+        Elegir otro juego
+      </button>
+      <header className="hero">
+        <Capybara mood="happy" label="CapyRíos" />
+        <p className="eyebrow">Hidrografía</p>
+        <h1>CapyRíos</h1>
+        <p>Los 22 ríos de la ficha. Escribe el nombre con el teclado, también en el móvil.</p>
+      </header>
       <nav className="menu" aria-label="Ríos">
         <button className="primary" type="button" onClick={() => onGo("/rios")}>
           Escribir el río
@@ -122,6 +176,19 @@ function Home({
           Mapa de ríos
         </button>
       </nav>
+      <div className="subnav">
+        <button
+          className="ghost"
+          type="button"
+          onClick={() => {
+            const next = { ...save, sound: !save.sound };
+            writeSave(next);
+            onSave(next);
+          }}
+        >
+          Sonido: {save.sound ? "sí" : "no"}
+        </button>
+      </div>
     </section>
   );
 }
