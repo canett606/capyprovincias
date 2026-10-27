@@ -5,6 +5,9 @@ import { loadSave, writeSave } from "./progress";
 import { AtlasScreen } from "./screens/AtlasScreen";
 import { HangmanScreen } from "./screens/HangmanScreen";
 import { QuizScreen } from "./screens/QuizScreen";
+import { RiverAtlasScreen } from "./screens/RiverAtlasScreen";
+import { RiverHangmanScreen } from "./screens/RiverHangmanScreen";
+import { RiverQuizScreen } from "./screens/RiverQuizScreen";
 
 function routeOf(): string {
   const raw = window.location.hash.replace(/^#/, "") || "/";
@@ -35,6 +38,11 @@ export function App() {
   else if (route === "/repaso") screen = <QuizScreen mode="review" onExit={() => go("/")} />;
   else if (route === "/ahorcado") screen = <HangmanScreen onExit={() => go("/")} />;
   else if (route === "/provincias") screen = <AtlasScreen onExit={() => go("/")} />;
+  else if (route === "/rios") screen = <RiverQuizScreen mode="practica" onExit={() => go("/")} />;
+  else if (route === "/rios-examen") screen = <RiverQuizScreen mode="examen" onExit={() => go("/")} />;
+  else if (route === "/rios-repaso") screen = <RiverQuizScreen mode="repaso" onExit={() => go("/")} />;
+  else if (route === "/rios-ahorcado") screen = <RiverHangmanScreen onExit={() => go("/")} />;
+  else if (route === "/rios-mapa") screen = <RiverAtlasScreen onExit={() => go("/")} />;
 
   return (
     <main className="app">
@@ -56,6 +64,7 @@ function Home({
   onGo: (path: string) => void;
 }) {
   const misses = Object.keys(save.wrong).length;
+  const riverMisses = Object.keys(save.rivers).length;
   return (
     <section>
       <header className="hero">
@@ -94,6 +103,25 @@ function Home({
           Sonido: {save.sound ? "sí" : "no"}
         </button>
       </div>
+      <h2 className="block-title">Ríos del examen</h2>
+      <p className="help">Los 22 de la ficha. Escribe el nombre con el teclado, también en el móvil.</p>
+      <nav className="menu" aria-label="Ríos">
+        <button className="primary" type="button" onClick={() => onGo("/rios")}>
+          Escribir el río
+        </button>
+        <button className="primary" type="button" onClick={() => onGo("/rios-ahorcado")}>
+          Ahorcado
+        </button>
+        <button className="primary" type="button" onClick={() => onGo("/rios-examen")}>
+          Repaso para examen
+        </button>
+        <button className="primary" type="button" onClick={() => onGo("/rios-repaso")}>
+          Ríos fallados{riverMisses ? ` (${riverMisses})` : ""}
+        </button>
+        <button className="primary" type="button" onClick={() => onGo("/rios-mapa")}>
+          Mapa de ríos
+        </button>
+      </nav>
     </section>
   );
 }

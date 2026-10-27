@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from "react";
 
 export function AnswerForm({
   disabled,
+  label = "Provincia",
   onSubmit,
 }: {
   disabled?: boolean;
+  label?: string;
   onSubmit: (value: string) => void;
 }) {
   const [value, setValue] = useState("");
@@ -24,7 +26,7 @@ export function AnswerForm({
       }}
     >
       <label>
-        Provincia
+        {label}
         <input
           ref={field}
           value={value}

@@ -3,6 +3,7 @@ import { applyGuess, emptyBoard, solutionKeys } from "../shared/hangman";
 import { PATHS } from "../shared/mapPaths";
 import { PROVINCES } from "../shared/provinces";
 import { clueSpoils, gradeAnswer, hangmanClue, textQuestions } from "../shared/questions";
+import { RIVERS, gradeRiver, riverClueSpoils } from "../shared/rivers";
 
 describe("provincias", () => {
   it("son las 50, sin repetir id", () => {
@@ -52,6 +53,41 @@ describe("ahorcado", () => {
     let board = emptyBoard();
     for (const letter of ["a", "l", "v"]) board = applyGuess("Álava", board, letter);
     expect(board.status).toBe("won");
+  });
+});
+
+describe("ríos", () => {
+  it("son los 22 de la ficha, numerados del 1 al 22", () => {
+    expect(RIVERS).toHaveLength(22);
+    expect(new Set(RIVERS.map((river) => river.id)).size).toBe(22);
+    expect(RIVERS.map((river) => river.number).sort((a, b) => a - b)).toEqual(
+      Array.from({ length: 22 }, (_, index) => index + 1),
+    );
+  });
+
+  it("la pista no contiene el nombre y el trazado existe", () => {
+    for (const river of RIVERS) {
+      expect(riverClueSpoils(river.clue, river), river.name).toBe(false);
+      expect(river.d.length, river.id).toBeGreaterThan(12);
+    }
+  });
+
+  it("acepta el nombre sin tilde y el otro nombre", () => {
+    const mino = RIVERS.find((river) => river.id === "mino");
+    const jucar = RIVERS.find((river) => river.id === "jucar");
+    const nervion = RIVERS.find((river) => river.id === "nervion");
+    expect(mino && gradeRiver("mino", mino)).toEqual({ kind: "ok", alias: null });
+    expect(jucar && gradeRiver("Xúquer", jucar)).toMatchObject({ kind: "ok", alias: "Xúquer" });
+    expect(nervion && gradeRiver("rio nerbioi", nervion)).toMatchObject({ kind: "ok", alias: "Nerbioi" });
+  });
+
+  it("no da por bueno otro río y avisa si falta una letra", () => {
+    const tajo = RIVERS.find((river) => river.id === "tajo");
+    const ebro = RIVERS.find((river) => river.id === "ebro");
+    expect(tajo && gradeRiver("Ebro", tajo)).toEqual({ kind: "other", otherId: "ebro" });
+    expect(ebro && gradeRiver("Ebro", ebro)).toEqual({ kind: "ok", alias: null });
+    expect(tajo && gradeRiver("Tajo", tajo)).toEqual({ kind: "ok", alias: null });
+    expect(ebro && gradeRiver("Ebr", ebro)).toEqual({ kind: "close" });
   });
 });
 
