@@ -146,10 +146,16 @@ function Gate({ onGo }: { onGo: (path: string) => void }) {
                 value={draft}
                 maxLength={16}
                 autoComplete="nickname"
+                enterKeyHint="go"
                 onChange={(event) => setDraft(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key !== "Enter") return;
+                  event.preventDefault();
+                  enter(draft);
+                }}
               />
             </label>
-            <button className="primary" type="submit" disabled={!known}>
+            <button className="primary" type="submit" aria-disabled={!known}>
               Empezar
             </button>
           </form>

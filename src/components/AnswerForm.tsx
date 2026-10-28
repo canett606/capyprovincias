@@ -15,9 +15,21 @@ export function AnswerForm({
 }) {
   const [value, setValue] = useState("");
   const field = useRef<HTMLInputElement>(null);
+  const lock = useRef(false);
+  useEffect(() => {
+    lock.current = false;
+  });
   useEffect(() => {
     if (!disabled) field.current?.focus();
   }, [disabled]);
+
+  function send(raw: string) {
+    const next = raw.trim();
+    if (!next || disabled || lock.current) return;
+    lock.current = true;
+    onSubmit(next);
+    setValue("");
+  }
 
   function insert(char: string) {
     const el = field.current;
@@ -37,10 +49,7 @@ export function AnswerForm({
     <form
       onSubmit={(event) => {
         event.preventDefault();
-        const next = value.trim();
-        if (!next || disabled) return;
-        onSubmit(next);
-        setValue("");
+        send(value);
       }}
     >
       <label>
@@ -57,6 +66,11 @@ export function AnswerForm({
           spellCheck={false}
           enterKeyHint="go"
           onChange={(event) => setValue(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key !== "Enter") return;
+            event.preventDefault();
+            send(value);
+          }}
           onFocus={(event) => {
             const target = event.currentTarget;
             window.setTimeout(() => target.scrollIntoView?.({ block: "center", inline: "nearest" }), 350);
@@ -79,7 +93,7 @@ export function AnswerForm({
           ))}
         </div>
       ) : null}
-      <button className="primary" type="submit" disabled={disabled || value.trim().length === 0}>
+      <button className="primary" type="submit" disabled={disabled} aria-disabled={disabled || value.trim().length === 0}>
         Comprobar
       </button>
     </form>

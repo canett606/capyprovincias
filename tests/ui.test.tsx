@@ -32,6 +32,15 @@ describe("escribir la provincia", () => {
     fireEvent.click(screen.getByRole("button", { name: "Comprobar" }));
     expect(sent).toEqual(["Bizkaia"]);
   });
+
+  it("comprueba al pulsar enter, igual que el botón", () => {
+    const sent: string[] = [];
+    render(<AnswerForm onSubmit={(value) => sent.push(value)} />);
+    const input = screen.getByLabelText("Provincia");
+    fireEvent.change(input, { target: { value: "Bizkaia" } });
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(sent).toEqual(["Bizkaia"]);
+  });
 });
 
 describe("mapa de ríos para aprender", () => {

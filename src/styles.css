@@ -90,7 +90,7 @@ a.primary {
 
 .back { margin-bottom: 12px; }
 
-.primary:disabled { opacity: 0.55; }
+.primary:disabled, .primary[aria-disabled="true"] { opacity: 0.55; }
 
 .ghost { background: transparent; color: #fffaf3; border-color: #fffaf3; }
 
