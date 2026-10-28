@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { App } from "../src/App";
-import { activePerson, choosePerson, clearActive, loadSave, remember, rememberRiver } from "../src/progress";
+import { activePerson, choosePerson, clearActive, loadSave, remember, rememberCalendar, rememberNoun, rememberRiver } from "../src/progress";
 
 afterEach(() => {
   cleanup();
@@ -40,6 +40,17 @@ describe("progreso por persona", () => {
     choosePerson("Jose");
     expect(activePerson()?.name).toBe("José");
     expect(loadSave().wrong).toEqual({ cadiz: 1 });
+  });
+
+  it("guarda el valenciano aparte de las provincias", () => {
+    choosePerson("Laia");
+    rememberNoun("dia", false);
+    rememberCalendar("marc", false);
+    expect(loadSave().nouns).toEqual({ dia: 1 });
+    expect(loadSave().calendar).toEqual({ marc: 1 });
+    expect(loadSave().wrong).toEqual({});
+    rememberNoun("dia", true);
+    expect(loadSave().nouns).toEqual({});
   });
 
   it("pide el nombre antes de enseñar los juegos", () => {

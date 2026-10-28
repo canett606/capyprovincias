@@ -58,6 +58,7 @@ export function mulberry32(seed: number): () => number {
 export function hangKey(char: string): string | null {
   const lower = char.toLowerCase();
   if (lower === "ñ") return "ñ";
+  if (lower === "ç") return "ç";
   if (ACCENTS[lower]) return ACCENTS[lower];
   if (/^[a-z]$/.test(lower)) return lower;
   return null;

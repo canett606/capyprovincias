@@ -6,6 +6,8 @@ export type Save = {
   wrong: Record<string, number>;
   rivers: Record<string, number>;
   ranges: Record<string, number>;
+  nouns: Record<string, number>;
+  calendar: Record<string, number>;
 };
 
 export type Person = {
@@ -15,6 +17,8 @@ export type Person = {
   wrong: Record<string, number>;
   rivers: Record<string, number>;
   ranges: Record<string, number>;
+  nouns: Record<string, number>;
+  calendar: Record<string, number>;
   sessions: number;
   last: string;
 };
@@ -24,7 +28,7 @@ type Bank = {
   users: Record<string, Person>;
 };
 
-const EMPTY_SAVE: Save = { sound: true, wrong: {}, rivers: {}, ranges: {} };
+const EMPTY_SAVE: Save = { sound: true, wrong: {}, rivers: {}, ranges: {}, nouns: {}, calendar: {} };
 
 export function cleanName(raw: string): string {
   return raw.replace(/\s+/g, " ").trim().slice(0, 16);
@@ -63,6 +67,8 @@ export function choosePerson(rawName: string): Person | null {
       wrong: {},
       rivers: {},
       ranges: {},
+      nouns: {},
+      calendar: {},
       sessions: 0,
       last: "",
     };
@@ -100,10 +106,14 @@ export function personBlurb(person: Person): string {
   const provinces = Object.keys(person.wrong).length;
   const rivers = Object.keys(person.rivers).length;
   const ranges = Object.keys(person.ranges).length;
+  const nouns = Object.keys(person.nouns).length;
+  const calendar = Object.keys(person.calendar).length;
   const faults = [
     provinces ? `${provinces} ${provinces === 1 ? "provincia" : "provincias"}` : "",
     rivers ? `${rivers} ${rivers === 1 ? "río" : "ríos"}` : "",
     ranges ? `${ranges} ${ranges === 1 ? "relieve" : "relieves"}` : "",
+    nouns ? `${nouns} ${nouns === 1 ? "paraula" : "paraules"}` : "",
+    calendar ? `${calendar} ${calendar === 1 ? "calendari" : "calendaris"}` : "",
   ].filter(Boolean);
   const days = `${person.sessions} ${person.sessions === 1 ? "día" : "días"}`;
   const pending = faults.length ? faults.join(" · ") : "sin fallos guardados";
@@ -112,12 +122,14 @@ export function personBlurb(person: Person): string {
 
 export function loadSave(): Save {
   const person = activePerson();
-  if (!person) return { sound: EMPTY_SAVE.sound, wrong: {}, rivers: {}, ranges: {} };
+  if (!person) return { sound: EMPTY_SAVE.sound, wrong: {}, rivers: {}, ranges: {}, nouns: {}, calendar: {} };
   return {
     sound: person.sound,
     wrong: { ...person.wrong },
     rivers: { ...person.rivers },
     ranges: { ...person.ranges },
+    nouns: { ...person.nouns },
+    calendar: { ...person.calendar },
   };
 }
 
@@ -132,6 +144,8 @@ export function writeSave(save: Save): void {
     wrong: counts(save.wrong),
     rivers: counts(save.rivers),
     ranges: counts(save.ranges),
+    nouns: counts(save.nouns),
+    calendar: counts(save.calendar),
   };
   writeBank(bank);
 }
@@ -157,6 +171,22 @@ export function rememberRange(id: string, ok: boolean): void {
   if (!activePerson()) return;
   if (ok) delete save.ranges[id];
   else save.ranges[id] = (save.ranges[id] ?? 0) + 1;
+  writeSave(save);
+}
+
+export function rememberNoun(id: string, ok: boolean): void {
+  const save = loadSave();
+  if (!activePerson()) return;
+  if (ok) delete save.nouns[id];
+  else save.nouns[id] = (save.nouns[id] ?? 0) + 1;
+  writeSave(save);
+}
+
+export function rememberCalendar(id: string, ok: boolean): void {
+  const save = loadSave();
+  if (!activePerson()) return;
+  if (ok) delete save.calendar[id];
+  else save.calendar[id] = (save.calendar[id] ?? 0) + 1;
   writeSave(save);
 }
 
@@ -200,6 +230,8 @@ function sanitizePerson(key: string, value: unknown): Person | null {
     wrong: counts(row.wrong),
     rivers: counts(row.rivers),
     ranges: counts(row.ranges),
+    nouns: counts(row.nouns),
+    calendar: counts(row.calendar),
     sessions: Math.max(0, Math.floor(Number(row.sessions) || 0)),
     last: typeof row.last === "string" && /^\d{4}-\d{2}-\d{2}$/.test(row.last) ? row.last : "",
   };
@@ -215,6 +247,8 @@ function readLegacy(): Save | null {
       wrong: counts(parsed.wrong),
       rivers: counts(parsed.rivers),
       ranges: counts(parsed.ranges),
+      nouns: counts(parsed.nouns),
+      calendar: counts(parsed.calendar),
     };
   } catch {
     return null;

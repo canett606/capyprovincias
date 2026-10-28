@@ -8,9 +8,15 @@ import { QuizScreen } from "./screens/QuizScreen";
 import { RangeAtlasScreen } from "./screens/RangeAtlasScreen";
 import { RangeHangmanScreen } from "./screens/RangeHangmanScreen";
 import { RangeQuizScreen } from "./screens/RangeQuizScreen";
+import { CalendarHangmanScreen } from "./screens/CalendarHangmanScreen";
+import { CalendarQuizScreen } from "./screens/CalendarQuizScreen";
+import { CalendarSheetScreen } from "./screens/CalendarSheetScreen";
+import { NounRulesScreen } from "./screens/NounRulesScreen";
+import { NounScreen } from "./screens/NounScreen";
 import { RiverAtlasScreen } from "./screens/RiverAtlasScreen";
 import { RiverHangmanScreen } from "./screens/RiverHangmanScreen";
 import { RiverQuizScreen } from "./screens/RiverQuizScreen";
+import { ValenciaHome } from "./screens/ValenciaHome";
 
 function routeOf(): string {
   const raw = window.location.hash.replace(/^#/, "") || "/";
@@ -29,6 +35,23 @@ export function App() {
     if (!window.location.hash) window.location.hash = "#/";
     if (!activePerson() && routeOf() !== "/") window.location.hash = "#/";
     return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    const apply = () => {
+      const covered = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
+      document.documentElement.style.setProperty("--keyboard", `${Math.round(covered)}px`);
+    };
+    apply();
+    viewport.addEventListener("resize", apply);
+    viewport.addEventListener("scroll", apply);
+    return () => {
+      viewport.removeEventListener("resize", apply);
+      viewport.removeEventListener("scroll", apply);
+      document.documentElement.style.removeProperty("--keyboard");
+    };
   }, []);
 
   const go = (path: string) => {
@@ -56,6 +79,16 @@ export function App() {
   else if (route === "/cordilleras-repaso") screen = <RangeQuizScreen mode="repaso" onExit={() => go("/cordilleras-inicio")} />;
   else if (route === "/cordilleras-ahorcado") screen = <RangeHangmanScreen onExit={() => go("/cordilleras-inicio")} />;
   else if (route === "/cordilleras-mapa") screen = <RangeAtlasScreen onExit={() => go("/cordilleras-inicio")} />;
+  else if (route === "/valencia-inicio") screen = <ValenciaHome save={save} onSave={setSave} onGo={go} />;
+  else if (route === "/noms") screen = <NounScreen mode="practica" onExit={() => go("/valencia-inicio")} />;
+  else if (route === "/noms-examen") screen = <NounScreen mode="examen" onExit={() => go("/valencia-inicio")} />;
+  else if (route === "/noms-repaso") screen = <NounScreen mode="repaso" onExit={() => go("/valencia-inicio")} />;
+  else if (route === "/noms-norma") screen = <NounRulesScreen onExit={() => go("/valencia-inicio")} onPractice={() => go("/noms")} />;
+  else if (route === "/calendari") screen = <CalendarQuizScreen mode="preguntas" onExit={() => go("/valencia-inicio")} />;
+  else if (route === "/calendari-test") screen = <CalendarQuizScreen mode="test" onExit={() => go("/valencia-inicio")} />;
+  else if (route === "/calendari-repaso") screen = <CalendarQuizScreen mode="repaso" onExit={() => go("/valencia-inicio")} />;
+  else if (route === "/calendari-ahorcado") screen = <CalendarHangmanScreen onExit={() => go("/valencia-inicio")} />;
+  else if (route === "/calendari-fitxa") screen = <CalendarSheetScreen onExit={() => go("/valencia-inicio")} />;
 
   return (
     <main className="app">
@@ -135,6 +168,10 @@ function Gate({ onGo }: { onGo: (path: string) => void }) {
         <p>Entra en el que quieras. Tu repaso no se mezcla con el de otra persona.</p>
       </header>
       <nav className="menu" aria-label="Juegos">
+        <button className="primary" type="button" onClick={() => onGo("/valencia-inicio")}>
+          CapyValencià
+          <small>Gènere, dies i mesos</small>
+        </button>
         <a className="primary" href={verbs}>
           CapyVerbs
           <small>Los verbos irregulares</small>
