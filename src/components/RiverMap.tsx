@@ -9,16 +9,19 @@ export function RiverMap({
   activeId,
   numbers,
   label,
+  onPick,
 }: {
   activeId?: string;
   numbers: "all" | "active" | "off";
   label: string;
+  onPick?: (id: string) => void;
 }) {
   const ids = Object.keys(PATHS);
   const drawLand = (id: string) => (
     <path key={id} d={PATHS[id]} fill={LAND} stroke={LAND} strokeWidth={1.3} strokeLinejoin="round" />
   );
   const ordered = [...RIVERS.filter((river) => river.id !== activeId), ...RIVERS.filter((river) => river.id === activeId)];
+  const picked = onPick ? RIVERS.find((river) => river.id === activeId) : undefined;
 
   return (
     <div className="spain-frame">
@@ -52,7 +55,7 @@ export function RiverMap({
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
-              {numbers === "all" || (numbers === "active" && active) ? (
+              {!onPick && (numbers === "all" || (numbers === "active" && active)) ? (
                 <text
                   x={river.label[0]}
                   y={river.label[1]}
@@ -86,7 +89,53 @@ export function RiverMap({
           </text>
           {ids.filter((id) => CANARY_IDS.has(id)).map(drawLand)}
         </g>
+        {onPick
+          ? ordered.map((river) => {
+              const [x, y] = river.label;
+              const active = river.id === activeId;
+              return (
+                <g
+                  key={`${river.id}-hit`}
+                  className="river-hit"
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Número ${river.number}`}
+                  onClick={() => onPick(river.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onPick(river.id);
+                    }
+                  }}
+                >
+                  <circle cx={x + 6} cy={y - 4} r="16" fill="transparent" />
+                  <circle className="badge" cx={x + 6} cy={y - 4} r="9" fill={active ? "#ef7d1a" : "#fffaf3"} stroke="#1b2a28" strokeWidth="1.3" />
+                  <text
+                    x={x + 6}
+                    y={y - 4}
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fill="#1b2a28"
+                    fontSize="10"
+                    fontWeight="700"
+                    fontFamily="Trebuchet MS, Segoe UI, sans-serif"
+                    pointerEvents="none"
+                  >
+                    {river.number}
+                  </text>
+                </g>
+              );
+            })
+          : null}
       </svg>
+      {picked ? (
+        <div className="map-name" role="status">
+          <strong>
+            {picked.number}. {picked.name}
+          </strong>
+          <p>{picked.where}</p>
+        </div>
+      ) : null}
     </div>
   );
 }

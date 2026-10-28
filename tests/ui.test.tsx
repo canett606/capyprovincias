@@ -7,6 +7,7 @@ import { CalendarQuizScreen } from "../src/screens/CalendarQuizScreen";
 import { CalendarSheetScreen } from "../src/screens/CalendarSheetScreen";
 import { NounScreen } from "../src/screens/NounScreen";
 import { RangeQuizScreen } from "../src/screens/RangeQuizScreen";
+import { RiverAtlasScreen } from "../src/screens/RiverAtlasScreen";
 import { RiverQuizScreen } from "../src/screens/RiverQuizScreen";
 import { planRanges } from "../shared/ranges";
 import { planRivers } from "../shared/rivers";
@@ -30,6 +31,14 @@ describe("escribir la provincia", () => {
     fireEvent.change(screen.getByLabelText("Provincia"), { target: { value: "  Bizkaia " } });
     fireEvent.click(screen.getByRole("button", { name: "Comprobar" }));
     expect(sent).toEqual(["Bizkaia"]);
+  });
+});
+
+describe("mapa de ríos para aprender", () => {
+  it("al pulsar un número enseña el nombre en un cuadro", () => {
+    render(<RiverAtlasScreen onExit={() => undefined} />);
+    fireEvent.click(screen.getByRole("button", { name: "Número 17" }));
+    expect(screen.getByRole("status").textContent).toContain("17. Llobregat");
   });
 });
 

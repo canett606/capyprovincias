@@ -15,20 +15,13 @@ export function RiverAtlasScreen({ onExit }: { onExit: () => void }) {
         <p>22 ríos</p>
       </div>
       <h1>Mapa de ríos</h1>
-      <p>Toca un río para verlo en naranja. El número es el de la ficha.</p>
+      <p>Toca un número del mapa y el nombre sale en el cuadro. El número es el de la ficha.</p>
       <RiverMap
         activeId={active?.id}
         numbers="all"
+        onPick={(id) => setActiveId((current) => (current === id ? null : id))}
         label={active ? `Mapa con el río ${active.name}` : "Mapa de España con los 22 ríos"}
       />
-      {active ? (
-        <p className="feedback">
-          <strong>
-            {active.number}. {active.name}
-          </strong>
-          . {active.where}
-        </p>
-      ) : null}
       <ul className="atlas">
         {RIVERS.map((river) => (
           <li key={river.id}>
