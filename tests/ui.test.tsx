@@ -62,6 +62,20 @@ describe("escribir el río", () => {
     expect(screen.getByText(`Sí. ${river.name}.`)).toBeTruthy();
     vi.restoreAllMocks();
   });
+
+  it("con otro intro pasa a la siguiente pregunta", () => {
+    vi.spyOn(Date, "now").mockReturnValue(42);
+    const [river] = planRivers({ seed: 42, count: 10 });
+    render(<RiverQuizScreen mode="examen" onExit={() => undefined} />);
+    fireEvent.click(screen.getByRole("button", { name: "Empezar" }));
+    const input = screen.getByLabelText("Río");
+    fireEvent.change(input, { target: { value: river.name } });
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(screen.getByText(`Sí. ${river.name}.`)).toBeTruthy();
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(screen.getByText("2 de 22")).toBeTruthy();
+    vi.restoreAllMocks();
+  });
 });
 
 describe("escribir la cordillera", () => {
@@ -87,6 +101,8 @@ describe("gènere i nombre", () => {
     fireEvent.click(screen.getByRole("button", { name: noun.number === "singular" ? /^singular/ : /^plural/ }));
     fireEvent.click(screen.getByRole("button", { name: "Comprobar" }));
     expect(screen.getByText(nounResult(noun, noun.gender, noun.number).line)).toBeTruthy();
+    fireEvent.keyDown(document.body, { key: "Enter" });
+    expect(screen.getByText(planNouns({ seed: 42, count: 12 })[1].word)).toBeTruthy();
     vi.restoreAllMocks();
   });
 });

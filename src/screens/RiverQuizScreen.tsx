@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { playCue } from "../audio";
-import { AnswerForm } from "../components/AnswerForm";
+import { AnswerForm, useEnterAction } from "../components/AnswerForm";
 import { Capybara } from "../components/Capybara";
 import { RiverMap } from "../components/RiverMap";
 import { loadSave, rememberRiver } from "../progress";
@@ -73,6 +73,8 @@ export function RiverQuizScreen({ mode, onExit }: { mode: Mode; onExit: () => vo
     setVerdict(null);
     setRetried(false);
   }
+
+  useEnterAction(phase === "play" && solved, next);
 
   if (phase === "empty") {
     return (
@@ -163,20 +165,18 @@ export function RiverQuizScreen({ mode, onExit }: { mode: Mode; onExit: () => vo
           <p>
             En la ficha es el {river.number}. {river.where}
           </p>
-          <button className="primary" type="button" onClick={next}>
-            {index + 1 >= rivers.length ? "Ver resultado" : "Siguiente"}
-          </button>
         </div>
-      ) : (
-        <>
-          {verdict?.kind === "close" ? (
-            <p className="almost" role="status">
-              Casi. Cambia una letra.
-            </p>
-          ) : null}
-          <AnswerForm label="Río" onSubmit={submit} />
-        </>
-      )}
+      ) : verdict?.kind === "close" ? (
+        <p className="almost" role="status">
+          Casi. Cambia una letra.
+        </p>
+      ) : null}
+      <AnswerForm
+        label="Río"
+        onSubmit={submit}
+        onContinue={solved ? next : undefined}
+        continueLabel={index + 1 >= rivers.length ? "Ver resultado" : "Siguiente"}
+      />
     </section>
   );
 }

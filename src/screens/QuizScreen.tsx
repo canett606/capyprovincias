@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { playCue } from "../audio";
-import { AnswerForm } from "../components/AnswerForm";
+import { AnswerForm, useEnterAction } from "../components/AnswerForm";
 import { Capybara } from "../components/Capybara";
 import { SpainMap } from "../components/SpainMap";
 import { loadSave, remember } from "../progress";
@@ -77,6 +77,8 @@ export function QuizScreen({ mode, onExit }: { mode: Mode; onExit: () => void })
     setVerdict(null);
     setRetried(false);
   }
+
+  useEnterAction(phase === "play" && solved, next);
 
   if (phase === "empty") {
     return (
@@ -177,20 +179,17 @@ export function QuizScreen({ mode, onExit }: { mode: Mode; onExit: () => void })
           <p>
             {province.community}. Capital: {province.capital}.
           </p>
-          <button className="primary" type="button" onClick={next}>
-            {index + 1 >= questions.length ? "Ver resultado" : "Siguiente"}
-          </button>
         </div>
-      ) : (
-        <>
-          {verdict?.kind === "close" ? (
-            <p className="almost" role="status">
-              Casi. Cambia una letra.
-            </p>
-          ) : null}
-          <AnswerForm onSubmit={submit} />
-        </>
-      )}
+      ) : verdict?.kind === "close" ? (
+        <p className="almost" role="status">
+          Casi. Cambia una letra.
+        </p>
+      ) : null}
+      <AnswerForm
+        onSubmit={submit}
+        onContinue={solved ? next : undefined}
+        continueLabel={index + 1 >= questions.length ? "Ver resultado" : "Siguiente"}
+      />
     </section>
   );
 }

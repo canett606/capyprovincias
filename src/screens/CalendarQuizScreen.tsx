@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { playCue } from "../audio";
-import { AnswerForm } from "../components/AnswerForm";
+import { AnswerForm, useEnterAction } from "../components/AnswerForm";
 import { Capybara } from "../components/Capybara";
 import { loadSave, rememberCalendar } from "../progress";
 import {
@@ -86,6 +86,8 @@ export function CalendarQuizScreen({ mode, onExit }: { mode: Mode; onExit: () =>
     setRetried(false);
     setCedilla(false);
   }
+
+  useEnterAction(phase === "play" && solved, next);
 
   if (phase === "empty") {
     return (
@@ -183,20 +185,20 @@ export function CalendarQuizScreen({ mode, onExit }: { mode: Mode; onExit: () =>
           {verdict?.kind === "no" ? <p className="wrong">Era {item.name}.</p> : null}
           <p>{place}</p>
           {item.note ? <p>{item.note}</p> : null}
-          <button className="primary" type="button" onClick={next}>
-            {index + 1 >= items.length ? "Ver resultado" : "Siguiente"}
-          </button>
         </div>
-      ) : (
-        <>
-          {verdict?.kind === "close" ? (
-            <p className="almost" role="status">
-              {cedilla ? `Casi. Lleva ç: ${item.name}.` : "Casi. Cambia una letra."}
-            </p>
-          ) : null}
-          <AnswerForm label="En valenciano" lang="ca" extraKeys={["ç"]} onSubmit={submit} />
-        </>
-      )}
+      ) : verdict?.kind === "close" ? (
+        <p className="almost" role="status">
+          {cedilla ? `Casi. Lleva ç: ${item.name}.` : "Casi. Cambia una letra."}
+        </p>
+      ) : null}
+      <AnswerForm
+        label="En valenciano"
+        lang="ca"
+        extraKeys={["ç"]}
+        onSubmit={submit}
+        onContinue={solved ? next : undefined}
+        continueLabel={index + 1 >= items.length ? "Ver resultado" : "Siguiente"}
+      />
     </section>
   );
 }

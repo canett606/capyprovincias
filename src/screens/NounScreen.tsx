@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { useEnterAction } from "../components/AnswerForm";
 import { playCue } from "../audio";
 import { Capybara } from "../components/Capybara";
 import { loadSave, rememberNoun } from "../progress";
@@ -78,6 +79,8 @@ export function NounScreen({ mode, onExit }: { mode: Mode; onExit: () => void })
     setLine(null);
     setHint(false);
   }
+
+  useEnterAction(phase === "play" && solved, next);
 
   if (phase === "empty") {
     return (

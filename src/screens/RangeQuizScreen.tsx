@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { playCue } from "../audio";
-import { AnswerForm } from "../components/AnswerForm";
+import { AnswerForm, useEnterAction } from "../components/AnswerForm";
 import { Capybara } from "../components/Capybara";
 import { ReliefMap } from "../components/ReliefMap";
 import { loadSave, rememberRange } from "../progress";
@@ -73,6 +73,8 @@ export function RangeQuizScreen({ mode, onExit }: { mode: Mode; onExit: () => vo
     setVerdict(null);
     setRetried(false);
   }
+
+  useEnterAction(phase === "play" && solved, next);
 
   if (phase === "empty") {
     return (
@@ -163,20 +165,18 @@ export function RangeQuizScreen({ mode, onExit }: { mode: Mode; onExit: () => vo
           <p>
             En el mapa lleva el {unit.number}. {unit.where} {unit.kind === "valle" ? "Es una depresión." : "Es un relieve montañoso."}
           </p>
-          <button className="primary" type="button" onClick={next}>
-            {index + 1 >= units.length ? "Ver resultado" : "Siguiente"}
-          </button>
         </div>
-      ) : (
-        <>
-          {verdict?.kind === "close" ? (
-            <p className="almost" role="status">
-              Casi. Cambia una letra.
-            </p>
-          ) : null}
-          <AnswerForm label="Cordillera" onSubmit={submit} />
-        </>
-      )}
+      ) : verdict?.kind === "close" ? (
+        <p className="almost" role="status">
+          Casi. Cambia una letra.
+        </p>
+      ) : null}
+      <AnswerForm
+        label="Cordillera"
+        onSubmit={submit}
+        onContinue={solved ? next : undefined}
+        continueLabel={index + 1 >= units.length ? "Ver resultado" : "Siguiente"}
+      />
     </section>
   );
 }
